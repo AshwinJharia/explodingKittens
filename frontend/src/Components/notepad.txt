@@ -1,0 +1,469 @@
+These are Frontend files:
+
+Frontend/Components/Card.jsx:
+import { useRef, useState, useEffect } from "react";
+
+function Card({ onDraw, id, type, isClickable }) {
+	const [isHidden, setIsHidden] = useState(true);
+	const ref = useRef(null);
+
+	useEffect(() => {
+		const handleClick = () => {
+			element.removeEventListener("click", handleClick);
+			setIsHidden(false);
+			onDraw(id, type);
+		};
+		const element = ref.current;
+      if(isClickable){
+         element.addEventListener("click", handleClick);
+      }
+		return () => {
+			element.removeEventListener("click", handleClick);
+		};
+	}, [isClickable]);
+
+	let content;
+	if (isHidden) content = "❓";
+	else {
+		switch (type) {
+			case "cat":
+				content = "😼";
+				break;
+			case "defuse":
+				content = "🙅‍♂️";
+				break;
+			case "bomb":
+				content = "💣";
+				break;
+			case "shuffle":
+				content = "🔃";
+				break;
+			default:
+				content = "❓";
+		}
+	}
+	return (
+		<span className={`card ${isHidden ? "hidden" : "notHidden"}`} ref={ref}>
+			<h2 className="cardContent">{content}</h2>
+		</span>
+	);
+}
+
+export default Card;
+
+
+Frontend/Components/Deck.jsx:
+import { useDispatch, useSelector } from "react-redux";
+import { drawCard, selectDeck, selectGameStatus } from "../state/gameSlice";
+import Card from "./Card";
+import { useState } from "react";
+
+function Deck() {
+	const deck = useSelector(selectDeck);
+   const gameStatus = useSelector(selectGameStatus);
+   const [isClickable, setIsClickable] = useState(true);
+	const dispatch = useDispatch();
+
+	const handleDraw = (id, type) => {
+      setIsClickable(false);
+      setTimeout(() => {
+         dispatch(drawCard({ id, type }));
+         setIsClickable(true);
+      }, 1500);
+	};
+   if(gameStatus !== "ongoing")
+      return <div className="deck">
+			{gameStatus!=="idle" && <h1 className="message">
+				{gameStatus === "won" ? "You won 🎉" : "You lost 😿"}
+				</h1>}
+		</div>
+	return (
+		<div className="deck">			
+			{deck.map(({ id, type }) => (
+				<Card key={id} onDraw={handleDraw} id={id} type={type} isClickable={isClickable}/>
+			))}
+		</div>
+	);
+}
+
+export default Deck;
+
+Frontend/Components/Form.jsx:
+import { useDispatch, useSelector } from "react-redux";
+import { changeUser, selectCurrentUser, selectCurrentUserId, } from "../state/userSlice";
+import { useState } from "react";
+
+function Form() {
+	const currentUser = useSelector(selectCurrentUser);
+	const currentUserId = useSelector(selectCurrentUserId);
+	const dispatch = useDispatch();
+	const [isFormActive, setIsFormActive] = useState(false);
+	const [username, setUsername] = useState(currentUser);
+
+	const handleSubmit = async () => {
+		try {
+			const response = await fetch(`${import.meta.env.VITE_API_URL}/users`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ username }),
+			});
+			const userData = await response.json();
+			dispatch(changeUser(userData));
+			setIsFormActive(false);
+		} catch (error) {}
+	};
+
+	return (
+		<div className="form">
+			<span className="formLabel">
+				{`You are currently playing as ${currentUser}`}
+				{!currentUserId && ", your score won't be saved."}
+			</span>
+			<div className="formInput">
+				{isFormActive && (
+					<>
+						<input
+							type="text"
+							name="username"
+							id="username"
+							value={username}
+							onChange={(e) => setUsername(e.target.value)}
+						/>
+						<button aria-label="change username" onClick={handleSubmit}>
+							Change user
+						</button>
+					</>
+				)}
+				<button
+					aria-label="show input form"
+					onClick={() => setIsFormActive(!isFormActive)}
+				>
+					{!isFormActive ? "Change user" : "Cancel"}
+				</button>
+			</div>
+		</div>
+	);
+}
+
+export default Form;
+
+
+Frontend/Components/Game.jsx:
+import Deck from "./Deck";
+import Status from "./Status";
+import Inventory from "./Inventory";
+import Score from "./Score";
+
+function Game() {
+	return (
+		<section className="game">
+			<div className="topBar">
+				<Score />
+				<Inventory />
+			</div>
+			<Deck />
+			<Status />
+		</section>
+	);
+}
+
+export default Game;
+
+Frontend/Components/Inventory.jsx:
+import { useSelector } from "react-redux";
+import { selectInventory } from "../state/gameSlice";
+
+function Inventory() {
+	const inventory = useSelector(selectInventory);
+	const shuffle = `🙅‍♂️ ✕ ${inventory.defuse}`;
+	const cat = `😸 ✕ ${inventory.cat}`;
+
+	return <div className="inventory">
+      <span>{shuffle}</span>
+      <span>{cat}</span>
+   </div>;
+}
+
+export default Inventory;
+
+Frontend/Components/Leaderboard.jsx:
+import { useEffect, useState } from "react";
+
+function Leaderboard() {
+	const [playerData, setPlayerData] = useState([]);
+	const pollingInterval = 8000;
+	const fetchPlayers = async () => {
+		try {
+			const response = await fetch(`${import.meta.env.VITE_API_URL}/users`, {
+				method: "GET",
+			});
+			const data = await response.json();
+			if (Array.isArray(data)) setPlayerData(data);
+		} catch (error) {
+			console.error("Failed to fetch", error);
+		}
+	};
+	useEffect(() => {
+		fetchPlayers();
+		const interval = setInterval(fetchPlayers, pollingInterval);
+		return () => {
+			clearInterval(interval);
+		};
+	}, []);
+	return (
+		<div className="leaderboard">
+			<h2>Leaderboard: </h2>
+			<table id="leaderboard">
+				<thead>
+					<tr>
+						<th>Player</th>
+						<th>Score</th>
+						<th>Games Played</th>
+					</tr>
+				</thead>
+				<tbody>
+					{playerData.length > 0 &&
+						playerData.map(({ entityId, username, score, noOfGamesPlayed }) => (
+							<tr key={entityId}>
+								<td>{username}</td>
+								<td>{score}</td>
+								<td>{noOfGamesPlayed}</td>
+							</tr>
+						))}
+				</tbody>
+			</table>
+		</div>
+	);
+}
+
+export default Leaderboard;
+
+Frontend/Components/Navbar.jsx:
+import Form from "./Form"
+
+function Navbar() {
+   return <nav className="navbar">
+      <h1>Exploding Kittens 😸</h1>
+      <Form />
+   </nav>;
+}
+
+export default Navbar;
+
+Frontend/Components/Score.jsx:
+import { useDispatch, useSelector } from "react-redux";
+import { selectGameStatus } from "../state/gameSlice";
+import { useEffect } from "react";
+import { changeUser, incrementNoOfGamesPlayed, incrementScore, selectCurrentScore, selectCurrentUserId, selectNoOfGamesPlayed, } from "../state/userSlice";
+
+function Score() {
+	const gameStatus = useSelector(selectGameStatus);
+	const score = useSelector(selectCurrentScore);
+	const noOfGamesPlayed = useSelector(selectNoOfGamesPlayed);
+	const currentUserId = useSelector(selectCurrentUserId);
+	const dispatch = useDispatch();
+
+	const updateScore = async () => {
+		try {
+         const reqBody = {entityId: currentUserId, score, noOfGamesPlayed};
+         if(gameStatus === "won") {
+            reqBody.score++;
+         }
+         reqBody.noOfGamesPlayed++;
+
+			const response = await fetch(`${import.meta.env.VITE_API_URL}/users`, {
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(reqBody),
+			});
+         const user = await response.json();
+         dispatch(changeUser(user));
+		} catch (error) {
+         console.log(error);
+      }
+	};
+
+	useEffect(() => {
+		if (gameStatus === "won" || gameStatus === "lost") {
+			dispatch(incrementNoOfGamesPlayed());
+			if (gameStatus === "won") {
+				dispatch(incrementScore());
+			}
+			if (currentUserId) updateScore();
+		}
+	}, [gameStatus]);
+	return (
+		<div className="currentScore">
+			<span>Score: {score}</span>
+			<span>Games Played: {noOfGamesPlayed}</span>
+		</div>
+	);
+}
+
+export default Score;
+
+Frontend/Components/Status.jsx:
+import { useDispatch, useSelector } from "react-redux";
+import { initGame, quitGame, selectGameStatus } from "../state/gameSlice";
+
+function Status() {
+	const gameStatus = useSelector(selectGameStatus);
+	const dispatch = useDispatch();
+
+	let message = "";
+	switch (gameStatus) {
+		case "idle":
+			message = "Click start to start the game";
+			break;
+		case "ongoing":
+			message = "Click on a card to draw";
+			break;
+		case "won":
+			message = "Game Over";
+			break;
+		case "lost":
+			message = "Game Over";
+			break;
+		default:
+			break;
+	}
+
+	let buttonContent;
+	if (gameStatus === "idle") {
+		buttonContent = "Start";
+	} else if (gameStatus === "ongoing") {
+		buttonContent = "Restart";
+	} else {
+		buttonContent = "Retry";
+	}
+
+	return (
+		<div className="status">
+			<div className="gameStatusMessage">
+				<p className="statusText">{message}</p>
+				<span className="statusButtons">
+					<button
+						onClick={() => {
+							dispatch(initGame());
+						}}
+					>
+						{buttonContent}
+					</button>
+					{gameStatus === "ongoing" && (
+						<button onClick={() => dispatch(quitGame())}>Quit</button>
+					)}
+				</span>
+			</div>
+		</div>
+	);
+}
+
+export default Status;
+
+state/gameSlice.jsx:
+import { createSlice } from "@reduxjs/toolkit";
+import { v4 as uuid } from "uuid";
+
+const initialGameState = {
+	deck: [],
+	inventory: {},
+	gameStatus: "idle",
+};
+
+const gameSlice = createSlice({
+	name: "game",
+	initialState: initialGameState,
+	reducers: {
+		initGame: (state) => {
+			state.deck = createDeck();
+			state.inventory = {defuse: 0, cat: 0};
+			state.gameStatus = "ongoing"
+		},
+		quitGame: () => initialGameState,
+		drawCard: (state, action) => {
+			const { id: cardId, type } = action.payload;
+
+			switch (type) {
+				case "cat":
+					state.inventory.cat++;
+					break;
+				case "defuse":
+					state.inventory.defuse++;
+					break;
+				case "shuffle":
+					state.deck = createDeck();
+					return;
+				case "bomb": {
+					if (state.inventory.defuse && state.inventory.defuse > 0) {
+						state.inventory.defuse--;
+					} else {
+						state.gameStatus = "lost";
+						return;
+					}
+					break;
+				}
+				default:
+					break;
+			}
+			state.deck = state.deck.filter(({ id }) => id !== cardId);
+			if (!state.deck.length) state.gameStatus = "won";
+		},
+	},
+});
+
+function createDeck() {
+	const deck = [];
+	// We can change the number of cat and bomb to increase/decrease the difficulty of the game.
+	const cards = ["cat", "cat", "cat", "cat", "defuse", "shuffle", "bomb"];
+	for (let i = 0; i < 4; i++) {
+		const index = Math.floor(Math.random() * cards.length);
+		const id = uuid();
+		deck.push({ id, type: cards[index] });
+		cards.splice(index, 1);
+	}
+	return deck;
+}
+export const { initGame, quitGame, drawCard } = gameSlice.actions;
+export default gameSlice.reducer;
+
+export const selectDeck = (state) => state.game.deck;
+export const selectInventory = (state) => state.game.inventory;
+export const selectGameStatus = (state) => state.game.gameStatus;
+
+
+state/userSlice.jsx:
+import { createSlice } from "@reduxjs/toolkit";
+
+const initialUserState = {
+	entityId: null,
+	username: `RandomPlayer${Math.floor(Math.random() * 1000)}`,
+	score: 0,
+	noOfGamesPlayed: 0,
+};
+
+const userSlice = createSlice({
+	name: "user",
+	initialState: initialUserState,
+	reducers: {
+		changeUser: (state, action) => action.payload,
+		incrementScore: (state) => {
+			state.score += 1;
+		},
+		incrementNoOfGamesPlayed: (state) => {
+			state.noOfGamesPlayed += 1;
+		},
+	},
+});
+
+export const { incrementNoOfGamesPlayed, incrementScore, changeUser } =
+	userSlice.actions;
+	
+export default userSlice.reducer;
+export const selectCurrentUser = (state) => state.user.username;
+export const selectCurrentScore = (state) => state.user.score;
+export const selectNoOfGamesPlayed = (state) => state.user.noOfGamesPlayed;
+export const selectCurrentUserId = (state) => state.user.entityId;
