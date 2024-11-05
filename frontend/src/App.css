@@ -107,8 +107,8 @@
 
 #leaderboard th {
 	text-align: left;
-	background-color: #cbf510;
-	color: rgb(99, 76, 2);
+	background-color: #29a3a5;
+	color: rgb(39, 33, 13);
 }
 
 #leaderboard th:first-of-type {
@@ -151,7 +151,7 @@
 	font-size: large;
 	cursor: pointer;
 	border-radius: 100rem;
-	background-color: #c4f70f;
+	background-color: #ef93d7;
 	padding: 0.5rem;
 }
 
