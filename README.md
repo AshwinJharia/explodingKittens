@@ -139,5 +139,3 @@ main
 - Ensure all dependencies are installed and services are running before starting the backend and frontend servers.
 - Adjust the `.env` file based on your backend's running port if different from `8080`.
 ```
-
-This script can be saved directly as `README.md` in your project repository.
