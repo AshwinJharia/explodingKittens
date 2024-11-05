@@ -3,9 +3,12 @@ import { useEffect, useState } from "react";
 function Leaderboard() {
 	const [playerData, setPlayerData] = useState([]);
 	const pollingInterval = 20000;
+	const apiUrl = import.meta.env.VITE_API_URL;
+	// console.log('API URL:', apiUrl);
+
 	const fetchPlayers = async () => {
 		try {
-			const response = await fetch(`http://localhost:8080/api/leaderboard`, {
+			const response = await fetch(`${apiUrl}/api/leaderboard`, {
 				method: "GET",
 			});
 			const data = await response.json();

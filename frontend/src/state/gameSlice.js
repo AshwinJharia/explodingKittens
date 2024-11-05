@@ -51,8 +51,8 @@ const gameSlice = createSlice({
 function createDeck() {
 	const deck = [];
 	// We can change the number of cat and bomb to increase/decrease the difficulty of the game.
-	const cards = ["cat", "cat", "cat", "cat", "defuse", "shuffle", "bomb"];
-	for (let i = 0; i < 4; i++) {
+	const cards = ["defuse","cat", "cat","defuse", "cat","cat", "cat","cat", "defuse","shuffle", "bomb"];
+	for (let i = 0; i < 5; i++) {
 		const index = Math.floor(Math.random() * cards.length);
 		const id = uuid();
 		deck.push({ id, type: cards[index] });

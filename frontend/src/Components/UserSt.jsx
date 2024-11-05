@@ -6,12 +6,13 @@ function UserSt() {
 	const currentUser = useSelector(selectCurrentUser);
 	const currentUserId = useSelector(selectCurrentUserId);
 	const dispatch = useDispatch();
+	const apiUrl = import.meta.env.VITE_API_URL;
 	const [isUserStActive, setIsUserStActive] = useState(false);
 	const [username, setUsername] = useState(currentUser);
 
 	const handleSubmit = async () => {
 		try {
-			const response = await fetch(`http://localhost:8080/api/user`, {
+			const response = await fetch(`${apiUrl}/api/user`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

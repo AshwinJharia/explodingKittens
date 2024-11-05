@@ -10,11 +10,12 @@ import (
 
 var ctx = context.Background()
 
-//	var rdb = redis.NewClient(&redis.Options{
-//		Addr:     "localhost:6379",
-//		Password: "",
-//		DB:       0,
-//	})
+// var rdb = redis.NewClient(&redis.Options{
+// 	Addr:     "localhost:6379",
+// 	Password: "",
+// 	DB:       0,
+// })
+
 func NewRedisClient() *redis.Client {
 	redisURL := os.Getenv("REDIS_URL")
 	options, err := redis.ParseURL(redisURL)
