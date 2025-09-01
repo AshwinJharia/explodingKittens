@@ -1,141 +1,128 @@
-# Exploding Kittens
+# 🎮 Exploding Kittens - Single Player Game
 
-This project is a full-stack application with a Go backend and a React frontend. Below are the instructions to set up and run the application, along with the repository structure.
+A modern single-player implementation of the popular Exploding Kittens card game with user authentication and leaderboards.
 
-## Setup Instructions
+## 🚀 Features
+
+- **Single Player Game** - Draw cards and avoid exploding kittens
+- **User Authentication** - JWT-based registration and login
+- **Score Tracking** - Personal scores and global leaderboard
+- **Responsive Design** - Works on all screen sizes
+- **Real-time Feedback** - Toast notifications for all actions
+
+## 🏗 Tech Stack
+
+**Backend:** Go + Gin + Redis (Database)  
+**Frontend:** React + Vite + Redux + Framer Motion  
+**Database:** Redis (User data, scores, leaderboard)  
+**Deployment:** Render + Vercel
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- Go (version 1.19 or later)
-- Node.js (version 16.x or later)
-- Redis
+- Go 1.21+
+- Node.js 18+
+- Redis (Docker recommended)
 
-### Step-by-Step Guide
+### Local Development
 
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/AshwinJharia/explodingKittens.git
-   cd [repository-name]
-   ```
-
-2. **Backend Setup:**
-   - Navigate to the backend directory:
-     ```bash
-     cd backend
-     ```
-   - Install Go modules specified in `go.mod`:
-     ```bash
-     go get github.com/gin-contrib/cors@v1.7.2
-     go get github.com/gin-gonic/gin@v1.10.0
-     go get github.com/go-redis/redis/v8@v8.11.5
-     ```
-
-3. **Redis Setup:**
-   - Check if Redis is installed and running:
-     ```bash
-     redis-server --version
-     redis-cli ping
-     ```
-   - If Redis is not installed:
-     - **For Windows:** Download the latest MSI file from [Redis Releases](https://github.com/tporadowski/redis/releases), and during installation, make sure to tick the option to add Redis to the PATH and environment variables.
-     - **For macOS:**
-       ```bash
-       brew install redis
-       ```
-       Start Redis:
-       ```bash
-       brew services start redis
-       ```
-     - **For Linux:**
-       ```bash
-       sudo apt update
-       sudo apt install redis-server
-       sudo systemctl enable redis
-       sudo systemctl start redis
-       ```
-
-   - Verify Redis is running:
-     ```bash
-     redis-cli ping
-     ```
-
-4. **Redis Configuration in Backend:**
-   - Navigate to `backend/services/redisService.go` and adjust the comments to use the appropriate Redis instance for local development.
-
-5. **Start the Backend Server:**
-   - Run the following commands in the `backend` directory:
-     ```bash
-     go mod tidy
-     go build .
-     go run main.go
-     ```
-   - The backend server should now be running on `http://localhost:8080`.
-
-6. **Frontend Setup:**
-   - Navigate to the frontend directory:
-     ```bash
-     cd ../frontend
-     ```
-   - Install dependencies:
-     ```bash
-     npm install
-     ```
-
-7. **Create a `.env` File:**
-   - In the `frontend` directory, create a `.env` file and add the following line:
-     ```env
-     VITE_API_URL=http://localhost:8080
-     ```
-   - You may change the `VITE_API_URL` if your backend server is running on a different port.
-
-8. **Start the Frontend Server:**
-   ```bash
-   npm run dev
-   ```
-
-9. **Access the Application:**
-   - Open your browser and go to `http://localhost:5174` or `http://localhost:5173`.
-
-## Repository Structure
-
-```
-main
-├── backend
-│   ├── handlers
-│   │   └── userHandler.go
-│   ├── models
-│   │   └── userModel.go
-│   ├── services
-│   │   └── redisService.go
-│   ├── go.mod
-│   ├── go.sum
-│   └── main.go
-├── frontend
-│   ├── public
-│   ├── src
-│   │   ├── assets
-│   │   ├── Components
-│   │   │   ├── Card.jsx
-│   │   │   ├── Deck.jsx
-│   │   │   ├── Game.jsx
-│   │   │   ├── Inventory.jsx
-│   │   │   ├── Leaderboard.jsx
-│   │   │   ├── Navbar.jsx
-│   │   │   ├── Score.jsx
-│   │   │   ├── Status.jsx
-│   │   │   └── UserSt.jsx
-│   │   ├── state
-│   │   │   ├── gameSlice.js
-│   │   │   └── userSlice.js
-│   │   ├── App.css
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── package.json
-│   ├── package-lock.json
-│   ├── index.html
-│   └── vite.config.js
+1. **Clone and setup**
+```bash
+git clone <repo-url>
+cd exploding-kittens
 ```
 
-## Notes
-- Ensure all dependencies are installed and services are running before starting the backend and frontend servers.
-- Adjust the `.env` file based on your backend's running port if different from `8080`.
+2. **Start Redis**
+```bash
+docker-compose up -d redis
 ```
+
+3. **Backend**
+```bash
+cd backend
+cp .env.example .env
+go mod tidy
+go run main.go
+```
+
+4. **Frontend**
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Visit: http://localhost:5173
+
+## 🌐 Deployment
+
+### Environment Toggle
+Change `ENVIRONMENT=production` in backend and `VITE_ENVIRONMENT=production` in frontend to switch between local and production configs.
+
+### Backend (Render)
+1. Connect GitHub repo to Render
+2. Render auto-detects `render.yaml`
+3. Sets `ENVIRONMENT=production` automatically
+
+### Frontend (Vercel)
+1. Connect GitHub repo to Vercel
+2. Set root directory to `frontend`
+3. Sets `VITE_ENVIRONMENT=production` automatically
+
+## 🎮 How to Play
+
+1. Register/Login to save your scores
+2. Click "Start Game" to begin
+3. Draw cards by clicking on them
+4. Collect defuse cards to survive bombs
+5. Avoid exploding kittens or use defuse cards
+6. Clear all cards to win!
+
+## 📊 Project Structure
+
+```
+├── backend/          # Go API server
+│   ├── config/       # Environment config
+│   ├── handlers/     # HTTP handlers
+│   ├── middleware/   # Auth, CORS, rate limiting
+│   ├── services/     # Business logic
+│   └── render.yaml   # Render deployment
+├── frontend/         # React app
+│   ├── src/
+│   │   ├── components/
+│   │   ├── services/
+│   │   └── config/
+│   └── vercel.json   # Vercel deployment
+└── docker-compose.yml # Redis for development
+```
+
+## 🗄️ Database Schema (Redis)
+
+**Hash Tables:**
+- `users` - Complete user profiles (ID, username, email, password hash, scores)
+- `usernames` - Username to user ID mapping for fast lookup
+- `scores` - Username to score mapping for leaderboard
+
+## 🔧 API Endpoints
+
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/profile` - User profile
+- `POST /api/game/user` - Update user score
+- `GET /api/game/user/:username` - Get user score
+- `GET /api/game/leaderboard` - Game leaderboard
+
+## 🧪 Testing
+
+```bash
+# Backend
+cd backend && go test -v ./...
+
+# Frontend  
+cd frontend && npm test
+```
+
+## 📄 License
+
+MIT License

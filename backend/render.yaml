@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: exploding-kittens-api
+    env: go
+    buildCommand: go build -o main .
+    startCommand: ./main
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PORT
+        sync: false
+      - key: GIN_MODE
+        value: release
+      - key: JWT_SECRET
+        generateValue: true
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: exploding-kittens-redis
+          property: connectionString
+      - key: ALLOWED_ORIGINS
+        value: https://exploding-kittens.vercel.app
+
+  - type: redis
+    name: exploding-kittens-redis
+    ipAllowList: []

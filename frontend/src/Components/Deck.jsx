@@ -1,7 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
 import { drawCard, selectDeck, selectGameStatus } from "../state/gameSlice";
+import { GAME_STATUS, GAME_CONFIG } from "../constants/gameConstants";
 import Card from "./Card";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 function Deck() {
 	const deck = useSelector(selectDeck);
@@ -9,19 +10,26 @@ function Deck() {
    const [isClickable, setIsClickable] = useState(true);
 	const dispatch = useDispatch();
 
-	const handleDraw = (id, type) => {
+	const handleDraw = useCallback((id, type) => {
       setIsClickable(false);
       setTimeout(() => {
          dispatch(drawCard({ id, type }));
          setIsClickable(true);
-      }, 1500);
-	};
-   if(gameStatus !== "ongoing")
-      return <div className="deck">
-			{gameStatus!=="idle" && <h1 className="message">
-				{gameStatus === "won" ? "You won 🎉" : "You lost 😿"}
-				</h1>}
-		</div>
+      }, GAME_CONFIG.DRAW_DELAY);
+	}, [dispatch]);
+
+   if(gameStatus !== GAME_STATUS.ONGOING) {
+      return (
+         <div className="deck">
+			   {gameStatus !== GAME_STATUS.IDLE && (
+               <h1 className="message">
+				      {gameStatus === GAME_STATUS.WON ? "You won 🎉" : "You lost 😿"}
+			      </h1>
+            )}
+		   </div>
+      );
+   }
+
 	return (
 		<div className="deck">			
 			{deck.map(({ id, type }) => (

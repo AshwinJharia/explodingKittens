@@ -1,52 +1,77 @@
 import { useDispatch, useSelector } from "react-redux";
-import { selectGameStatus } from "../state/gameSlice";
+import { selectGameStatus, selectScoreProcessed, markScoreProcessed } from "../state/gameSlice";
 import { useEffect } from "react";
-import { changeUser, incrementScore, selectCurrentScore, selectCurrentUserId, } from "../state/userSlice";
+import { incrementScore, selectCurrentScore } from "../state/userSlice";
+import { useAuth } from "../hooks/useAuth.jsx";
+import config from "../config/env";
+import { showToast } from "./Toast";
 
 function Score() {
 	const gameStatus = useSelector(selectGameStatus);
-	const score = useSelector(selectCurrentScore);
-	// const updateScore= useSelector(updateScore)
-	const currentUserId = useSelector(selectCurrentUserId);
+	const scoreProcessed = useSelector(selectScoreProcessed);
+	const score = useSelector(selectCurrentScore) || 0;
+	const { user, isAuthenticated } = useAuth();
 	const dispatch = useDispatch();
-	const apiUrl = import.meta.env.VITE_API_URL;
 
-	const updateScore = async () => {
+	const updateBackendScore = async (newScore) => {
+		if (!isAuthenticated || !user?.username) {
+			console.log('Skipping backend update - not authenticated or no username');
+			return;
+		}
+		
+		console.log('Updating backend score:', { username: user.username, score: newScore });
+		
 		try {
-         const reqBody = {entityId: currentUserId, score};
-         if(gameStatus === "won") {
-            reqBody.score++;
-         };
-
-			const response = await fetch(`${apiUrl}/api/user`, {
-				method: "POST",
+			const url = `${config.API_URL}/api/game/user`;
+			console.log('Making request to:', url);
+			
+			const response = await fetch(url, {
+				method: 'POST',
 				headers: {
-					"Content-Type": "application/json",
+					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify(reqBody),
+				body: JSON.stringify({
+					username: user.username,
+					email: user.email || "temp@example.com", // Provide required field
+					password: "temppass123", // Provide required field
+					score: newScore
+				})
 			});
-         const user = await response.json();
-		 
-		 
-         dispatch(changeUser(user));
+			
+			console.log('Response status:', response.status);
+			
+			if (!response.ok) {
+				const error = await response.json();
+				console.error('Backend error:', error);
+				throw new Error(error.message || `HTTP ${response.status}`);
+			}
+			
+			const result = await response.json();
+			console.log('Backend response:', result);
+			showToast('Score saved successfully! 🎉', 'success');
 		} catch (error) {
-         console.log(error);
-      }
+			console.error('Failed to update score:', error);
+			showToast(`Failed to save score: ${error.message}`, 'error');
+		}
 	};
 
 	useEffect(() => {
-		if (gameStatus === "won" || gameStatus === "lost") {
-			
-			if (gameStatus === "won") {
-				dispatch(incrementScore());
-				updateScore();
-			}
-			// if (currentUserId) updateScore();
+		if (gameStatus === "won" && !scoreProcessed) {
+			dispatch(incrementScore());
+			dispatch(markScoreProcessed());
+			updateBackendScore(score + 1);
 		}
-	}, [gameStatus]);
+	}, [gameStatus, scoreProcessed, dispatch, score, isAuthenticated, user]);
+
 	return (
-		<div className="currentScore">
-			<span>Score: {score}</span>
+		<div className="score">
+			<h3>🏆 Score</h3>
+			<h2>{score}</h2>
+			{isAuthenticated ? (
+				<p className="score-subtitle">Playing as {user?.username}</p>
+			) : (
+				<p className="score-subtitle">Guest Mode - Score not saved</p>
+			)}
 		</div>
 	);
 }

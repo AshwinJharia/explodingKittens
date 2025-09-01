@@ -5,53 +5,54 @@ function Status() {
 	const gameStatus = useSelector(selectGameStatus);
 	const dispatch = useDispatch();
 
-	let message = "";
-	switch (gameStatus) {
-		case "idle":
-			message = "Click start to start the game";
-			break;
-		case "ongoing":
-			message = "Click on a card to draw";
-			break;
-		case "won":
-			message = "Game Over";
-			break;
-		case "lost":
-			message = "Game Over";
-			break;
-		default:
-			break;
-	}
+	const getStatusMessage = () => {
+		switch (gameStatus) {
+			case "idle":
+				return "Ready to play? Click Start to begin!";
+			case "ongoing":
+				return "Draw a card... but watch out for exploding kittens! 💥";
+			case "won":
+				return "🎉 Congratulations! You survived all the kittens!";
+			case "lost":
+				return "💥 BOOM! You drew an exploding kitten!";
+			default:
+				return "";
+		}
+	};
 
-	let buttonContent;
-	if (gameStatus === "idle") {
-		buttonContent = "Start";
-	} else if (gameStatus === "ongoing") {
-		buttonContent = "Restart";
-	} else {
-		buttonContent = "Retry";
-	}
+	const getButtonText = () => {
+		if (gameStatus === "idle") return "🚀 Start Game";
+		if (gameStatus === "ongoing") return "🔄 Restart";
+		return "🎮 Play Again";
+	};
+
+	const getStatusClass = () => {
+		return `status ${gameStatus}`;
+	};
 
 	return (
-		<div className="status">
-			<div className="gameStatusMessage">
-				<p className="statusText">{message}</p>
-				<span className="statusButtons">
-					<button
-						onClick={() => {
-							dispatch(initGame());
-						}}
+		<div className={getStatusClass()}>
+			<div className="status-content">
+				<p className="status-message">{getStatusMessage()}</p>
+				<div className="status-buttons">
+					<button 
+						className="btn btn-primary"
+						onClick={() => dispatch(initGame())}
 					>
-						{buttonContent}
+						{getButtonText()}
 					</button>
 					{gameStatus === "ongoing" && (
-						<button onClick={() => dispatch(quitGame())}>Quit</button>
+						<button 
+							className="btn btn-secondary"
+							onClick={() => dispatch(quitGame())}
+						>
+							🏃 Quit Game
+						</button>
 					)}
-				</span>
+				</div>
 			</div>
 		</div>
 	);
 }
 
 export default Status;
-

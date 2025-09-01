@@ -10,17 +10,23 @@ const userSlice = createSlice({
 	name: "user",
 	initialState: initialUserState,
 	reducers: {
-		changeUser: (state, action) => action.payload,
+		changeUser: (state, action) => {
+			return {
+				...action.payload,
+				score: action.payload.score || 0
+			};
+		},
 		incrementScore: (state) => {
-			state.score += 1;
+			state.score = (state.score || 0) + 1;
 		},
 		updateScore: (state) => {
 			state.score += 1;
 		},
+		resetUser: () => initialUserState,
 	},
 });
 
-export const {incrementScore, changeUser,updateScore} =
+export const {incrementScore, changeUser, updateScore, resetUser} =
 	userSlice.actions;
 	
 export default userSlice.reducer;
