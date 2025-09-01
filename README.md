@@ -82,18 +82,24 @@ Change `ENVIRONMENT=production` in backend and `VITE_ENVIRONMENT=production` in 
 ## 📊 Project Structure
 
 ```
+├── render.yaml       # Render deployment config
 ├── backend/          # Go API server
 │   ├── config/       # Environment config
 │   ├── handlers/     # HTTP handlers
 │   ├── middleware/   # Auth, CORS, rate limiting
 │   ├── services/     # Business logic
-│   └── render.yaml   # Render deployment
+│   ├── models/       # Data models
+│   ├── main.go       # Application entry point
+│   ├── go.mod        # Go dependencies
+│   └── .env.example  # Environment template
 ├── frontend/         # React app
 │   ├── src/
 │   │   ├── components/
-│   │   ├── services/
-│   │   └── config/
-│   └── vercel.json   # Vercel deployment
+│   │   ├── config/
+│   │   └── state/
+│   ├── vercel.json   # Vercel deployment
+│   ├── package.json  # Node dependencies
+│   └── .env.example  # Environment template
 └── docker-compose.yml # Redis for development
 ```
 
