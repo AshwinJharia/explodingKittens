@@ -2,6 +2,7 @@ services:
   - type: web
     name: exploding-kittens-api
     env: go
+    rootDir: backend
     buildCommand: go build -o main .
     startCommand: ./main
     envVars:
