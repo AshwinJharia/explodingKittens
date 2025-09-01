@@ -5,6 +5,7 @@ services:
     rootDir: backend
     buildCommand: go build -o main .
     startCommand: ./main
+    plan: free
     envVars:
       - key: ENVIRONMENT
         value: production
@@ -15,13 +16,6 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: exploding-kittens-redis
-          property: connectionString
+        value: redis://default:password@redis-12345.c1.us-east-1-1.ec2.cloud.redislabs.com:12345
       - key: ALLOWED_ORIGINS
         value: https://exploding-kittens.vercel.app
-
-  - type: redis
-    name: exploding-kittens-redis
-    ipAllowList: []
