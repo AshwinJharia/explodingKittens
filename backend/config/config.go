@@ -3,13 +3,14 @@ package config
 import "os"
 
 type Config struct {
-	Port         string
-	Mode         string
-	RedisURL     string
-	RedisAddr    string
-	JWTSecret    string
-	AllowOrigins string
-	IsProduction bool
+	Port           string
+	Mode           string
+	RedisURL       string
+	RedisAddr      string
+	JWTSecret      string
+	AllowOrigins   string
+	IsProduction   bool
+	UseMemoryStore bool
 }
 
 func Load() *Config {
@@ -17,10 +18,11 @@ func Load() *Config {
 	isProduction := env == "production"
 
 	config := &Config{
-		Port:         getEnv("PORT", "8080"),
-		Mode:         getEnv("GIN_MODE", "debug"),
-		JWTSecret:    getEnv("JWT_SECRET", "dev-secret-key"),
-		IsProduction: isProduction,
+		Port:           getEnv("PORT", "8080"),
+		Mode:           getEnv("GIN_MODE", "debug"),
+		JWTSecret:      getEnv("JWT_SECRET", "dev-secret-key"),
+		IsProduction:   isProduction,
+		UseMemoryStore: getEnv("USE_MEMORY_STORE", "false") == "true",
 	}
 
 	if isProduction {

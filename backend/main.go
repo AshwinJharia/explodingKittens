@@ -14,7 +14,7 @@ func main() {
 	cfg := config.Load()
 	gin.SetMode(cfg.Mode)
 
-	services.InitRedis(cfg)
+	services.InitStorage(cfg)
 	services.InitAuth(cfg)
 
 	r := gin.New()

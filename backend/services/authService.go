@@ -76,12 +76,12 @@ func CreateUser(username, email, password string) (*models.User, error) {
 	}
 
 	userData, _ := json.Marshal(user)
-	err = rdb.HSet(ctx, "users", user.ID, userData).Err()
+	err = StoreUser(user.ID, userData)
 	if err != nil {
 		return nil, err
 	}
 
-	err = rdb.HSet(ctx, "usernames", username, user.ID).Err()
+	err = StoreUsername(username, user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -91,29 +91,29 @@ func CreateUser(username, email, password string) (*models.User, error) {
 }
 
 func GetUserByUsername(username string) (*models.User, error) {
-	userID, err := rdb.HGet(ctx, "usernames", username).Result()
+	userID, err := GetUserID(username)
 	if err != nil {
 		return nil, err
 	}
 
-	userData, err := rdb.HGet(ctx, "users", userID).Result()
+	userData, err := GetUser(userID)
 	if err != nil {
 		return nil, err
 	}
 
 	var user models.User
-	err = json.Unmarshal([]byte(userData), &user)
+	err = json.Unmarshal(userData, &user)
 	return &user, err
 }
 
 func GetUserByID(userID string) (*models.User, error) {
-	userData, err := rdb.HGet(ctx, "users", userID).Result()
+	userData, err := GetUser(userID)
 	if err != nil {
 		return nil, err
 	}
 
 	var user models.User
-	err = json.Unmarshal([]byte(userData), &user)
+	err = json.Unmarshal(userData, &user)
 	if err != nil {
 		return nil, err
 	}
